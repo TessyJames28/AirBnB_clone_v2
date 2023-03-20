@@ -142,5 +142,5 @@ Usage: <class_name>.update(<_id>, <dictionary>)
 <br>
 
 ### Author:
-Olayeye Ayomid[mailto:]([https://olayeyeayomide2000@gmail.com)
-Tessy James[mailto:](tessyjames28@gmail.com)
+* Olayeye Ayomide[mailto:](https://olayeyeayomide2000@gmail.com)
+* Tessy James[mailto:](tessyjames28@gmail.com)
