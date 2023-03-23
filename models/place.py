@@ -25,13 +25,13 @@ class Place(BaseModel, Base):
         city_id: city id
         user_id: user id
         name: name input
-        description: string of description
-        number_rooms: number of room in int
-        number_bathrooms: number of bathrooms in int
-        max_guest: maximum guest in int
-        price_by_night:: pice for a staying in int
-        latitude: latitude in flaot
-        longitude: longitude in float
+        description (string): description
+        number_rooms (int): number of room
+        number_bathrooms(int): number of bathrooms
+        max_guest (int): maximum guest
+        price_by_night (int): pice for a staying
+        latitude (float): latitude
+        longitude (float): longitude
         amenity_ids: list of Amenity ids
     """
     __tablename__ = "places"
