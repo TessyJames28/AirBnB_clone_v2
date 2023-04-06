@@ -5,9 +5,9 @@ folder of AirBnB Clone repo
 """
 from fabric.api import task, local
 from datetime import datetime
+import os
 
 
-@task
 def do_pack():
     """
     All files in the folder web_static must be added to the final archive
@@ -16,10 +16,12 @@ def do_pack():
     Return the archive path if successful otherwise return None
     """
     try:
-        local("mkdir versions")
+        if os.path.isdir("versions") is False:
+            if local("mkdir versions").failed is True:
+                return None
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        arch_name = f"versions/web_static_{timestamp}.tgz"
-        local(f"tar -czvf {arch_name} /AirBnb_clone/web_static")
+        arch_name = "versions/web_static_{}.tgz".format(timestamp)
+        local("tar -czvf {} web_static".format(arch_name))
         return arch_name
     except Exception:
         return None
