@@ -22,6 +22,7 @@ def do_pack():
     except Exception:
         return None
 
+
 def do_deploy(archive_path):
     """fabric command to deploy archive to remote servers"""
     if os.path.isfile(archive_path) is False:
@@ -47,6 +48,7 @@ def do_deploy(archive_path):
         return True
     except Exception:
         return False
+
 
 def deploy():
     """creates and distributes an archive to your web servers"""
