@@ -10,7 +10,7 @@ env.hosts = ["100.25.119.211", "100.25.48.208"]
 def do_clean(number=0):
     """Deletes out of date archives and leaves most recent ones"""
     num = 1 if int(number) <= 1 else int(number)
- 
+
     archives = sorted(os.listdir("versions"))
     with lcd("versions"):
         for archive in archives[:-num]:
