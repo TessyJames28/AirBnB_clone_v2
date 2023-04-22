@@ -1,6 +1,51 @@
-# Puppet manifest for server configuration and web_static deployment
+# Configure web server
 
-exec { 'server setup':
-  command  => 'sudo apt-get -y update && sudo apt-get -y install nginx && sudo mkdir -p /data/web_static/shared/ && sudo mkdir -p /data/web_static/releases/test/ && echo "Holberton School" | sudo tee /data/web_static/releases/test/index.html > /dev/null && sudo ln -sf /data/web_static/releases/test/ /data/web_static/current && sudo chown -R ubuntu:ubuntu /data/ && sudo sed -i \'44i \\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\' /etc/nginx/sites-available/default && sudo service nginx restart',
-  provider => shell,
+$server_conf = "server {
+	listen 80 default_server;
+
+	location /hbnb_static {
+		alias /data/web_static/current;
+		index index.html;
+		try_files \$uri \$uri/ =404;
+	}
+
+	error_page 404 /404.html;
+	location = /404.html{
+		internal;
+	}
+
+	location /redirect_me {
+		return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+	}
+}"
+
+$command_list = "echo '${server_conf}' > /etc/nginx/sites-enabled/default ;
+mkdir -p /data/web_static/shared/ ; 
+mkdir -p /data/web_static/releases/test/ ; 
+echo 'Hello, World ... !' | tee /data/web_static/releases/test/index.html ;
+ln -sf /data/web_static/releases/test/ /data/web_static/current ; 
+chown -R ubuntu:ubuntu /data ; 
+service nginx restart"
+
+exec { 'nginx':
+  command  => 'sudo apt -y update && sudo apt -y install nginx',
+  provider => 'shell'
+}
+
+file { '/var/www/html/index.html':
+  ensure  => file,
+  content => 'Hello, World!',
+  require => Exec['nginx']
+}
+
+file { '/var/www/html/404.html':
+  ensure  => file,
+  content => "Ceci n'est pas une page",
+  require => Exec['nginx']
+}
+
+exec { 'write_server':
+  command  => $command_list,
+  provider => 'shell',
+  require  => File['/var/www/html/404.html']
 }

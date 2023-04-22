@@ -1,27 +1,24 @@
 #!/usr/bin/python3
-"""
-Fabric script that generates a .tgz archive from the contents of the web_static
-folder of AirBnB Clone repo
-"""
-from fabric.api import task, local
+"""make a tarball of web_static files"""
+from fabric.api import local, task, settings
 from datetime import datetime
 import os
 
 
+@task
 def do_pack():
-    """
-    All files in the folder web_static must be added to the final archive
-    All archives must be stored in the folder versions (create it if not exist)
-    Archive name - web_static_<year><month><day><hour><minute><second>.tgz
-    Return the archive path if successful otherwise return None
-    """
+    """make a tar archive"""
     try:
+        date = datetime.now().strftime("%Y%m%d%H%M%S")
         if os.path.isdir("versions") is False:
-            if local("mkdir versions").failed is True:
-                return None
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        arch_name = "versions/web_static_{}.tgz".format(timestamp)
-        local("tar -czvf {} web_static".format(arch_name))
-        return arch_name
+            local("mkdir versions")
+        local('rm -rf git_folder')
+        local('git clone https://github.com/wisdom209/AirBnB_clone git_folder')
+        local('cp -r git_folder/web_static .')
+        local('rm -rf git_folder')
+        file_name = "versions/web_static_{}.tgz".format(date)
+        local("tar -cvzf {} web_static".format(file_name))
+        local('rm -rf web_static')
+        return file_name
     except Exception:
         return None

@@ -1,36 +1,71 @@
 #!/usr/bin/python3
-"""Fabric script that distributes an archive to web servers"""
-from fabric.api import put
-from fabric.api import run
-from fabric.api import env
+"""make a tarball of web_static files"""
+from fabric.api import local, task, run, put, env
+from datetime import datetime
 import os
+import sys
+
+# set connection parameters
+env.hosts = ['54.173.2.233', '54.210.243.50']
 
 
-env.hosts = ["100.25.119.211", "100.25.48.208"]
-
-
-def do_deploy(archive_path):
-    """fabric command to deploy archive to remote servers"""
-    if os.path.isfile(archive_path) is False:
-        return False
-
-    path = archive_path.split("/")[-1]
-    filename = path.split(".")[0]
-
+@task
+def do_pack():
+    """make a tar archive"""
     try:
-        put(archive_path, "/tmp/{}".format(path))
-        run("rm -rf /data/web_static/releases/")
-        run("mkdir -p /data/web_static/releases/{}".format(filename))
-        run("tar xzf /tmp/{} -C /data/web_static/releases/{}/".
-            format(path, filename))
-        run("rm -rf /tmp/{}".format(filename))
-        run("mv /data/web_static/releases/{}/web_static/* \
-            /data/web_static/releases/{}/".format(filename, filename))
-        run("rm -rf /data/web_static/releases/{}/web_static".format(filename))
-        run("rm -rf /data/web_static/current")
-        run("ln -s /data/web_static/releases/{} /data/web_static/current".
-            format(filename))
-        print("New version deployed!")
+        date = datetime.now().strftime("%Y%m%d%H%M%S")
+        if os.path.isdir("versions") is False:
+            local("mkdir versions")
+        local('rm -rf git_folder')
+        local('git clone https://github.com/wisdom209/AirBnB_clone git_folder')
+        local('cp -r git_folder/web_static .')
+        local('rm -rf git_folder')
+        file_name = "versions/web_static_{}.tgz".format(date)
+        local("tar -cvzf {} web_static".format(file_name))
+        local('rm -rf web_static')
+        return file_name
+    except Exception:
+        return None
+
+
+@task
+def do_deploy(archive_path):
+    """make a tar archive"""
+    try:
+        if os.path.exists(archive_path) is False:
+            return False
+        # split to get the archive name
+        filename = archive_path.split('/')[-1]
+        # get the archive name without extensions
+        file_no_ext = filename.rstrip('.tgz')
+        # push the archive to /tmp/ folder in server
+        put(archive_path, '/tmp/{}'.format(filename))
+        # maka a directory /data/web_static/releases/archive_name_no_ext
+        run('mkdir -p /data/web_static/releases/{}/'.format(file_no_ext))
+        # extract compressed archive in
+        # /data/web_static/releases/archive_name_no_ext
+        run('tar -xzf /tmp/{} -C /data/web_static/releases/{}/'.
+            format(filename, file_no_ext))
+        # remove archive file in /tmp/
+        run('rm -rf /tmp/{}'.format(filename))
+        # archive extracts to a folder webstatic, move the contents out,
+        # so they stand alone directly under /data/releases/web_static/archive
+        # but first test if the archive subfolder webstatic exists already
+        if run('test -e /data/web_static/releases/{}/web_static'
+               .format(file_no_ext)).failed:
+            run('mv -f /data/web_static/releases/{}/web_static\
+                 /data/web_static/releases/{}/'.
+                format(file_no_ext, file_no_ext))
+        # remove the now empty webstatic folder
+        run('rm -rf /data/web_static/releases{}/web_static'.
+            format(file_no_ext))
+        # delete old symbolic link
+        run('rm -rf /data/web_static/current')
+        # map symbolic link to deployed files
+        run('ln -sf /data/web_static/releases/{}/web_static/\
+             /data/web_static/current'.
+            format(file_no_ext))
+        print('New version deployed')
         return True
     except Exception:
         return False
