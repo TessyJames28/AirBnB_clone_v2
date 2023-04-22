@@ -25,6 +25,7 @@ def state_id():
             return render_template("9-states.html", state=state)
     return render_template("9-states.html")
 
+
 @app.teardown_appcontext
 def teardown(exc):
     """method that remove the currentSQLAlchemy Session"""
