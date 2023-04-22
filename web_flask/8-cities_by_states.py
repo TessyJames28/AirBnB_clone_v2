@@ -13,8 +13,8 @@ app = Flask(__name__)
 @app.route("/cities_by_states", strict_slashes=False)
 def city_state():
     """function that list the state elements"""
-    cities = storage.all("City").values()
-    return render_template("8-cities_by_states.html", cities=cities)
+    states = storage.all("State").values()
+    return render_template("8-cities_by_states.html", states=states)
 
 
 @app.teardown_appcontext
